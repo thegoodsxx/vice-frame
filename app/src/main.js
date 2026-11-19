@@ -480,6 +480,15 @@ document.querySelectorAll('.btn-export').forEach((btn) => {
 // --------------------------------------------------------- Initialization
 
 async function init() {
+  // Ensure Anton font is loaded before initial canvas render
+  if (document.fonts) {
+    try {
+      await document.fonts.ready;
+    } catch {
+      // Fallback gracefully
+    }
+  }
+
   const urlParams = new URLSearchParams(location.search);
   const shot = urlParams.get('shot');
 

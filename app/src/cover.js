@@ -219,18 +219,25 @@ export function drawCover(canvas, state, options = {}) {
   ctx.fillStyle = '#06050a';
   ctx.fillRect(0, 0, w, h);
 
-  // 2. Resolve layout
+  // 2. Resolve layout and grading
   const layoutDef = LAYOUTS[state.layoutId] || LAYOUTS.classic6;
   const gutter = Math.max(6, Math.round(Math.min(w, h) * 0.012));
+  const gradeKey = state.gradeId || 'vice-sunset';
+  const grade = GRADES[gradeKey];
 
-  // 3. Draw each panel
+  // 3. Draw each panel with color grading filter
   const panelStates = state.panels || {};
+  ctx.save();
+  if (grade && grade.filter) {
+    ctx.filter = grade.filter;
+  }
   for (const panel of layoutDef.panels) {
     const rect = getPanelRect(panel, w, h, gutter);
     const pState = panelStates[panel.id] || null;
     const isSelected = isPreview && panel.id === selectedPanelId;
     drawPanel(ctx, rect, pState, isSelected, isPreview);
   }
+  ctx.restore();
 
   // 4. Outer border framing
   ctx.strokeStyle = '#000000';
@@ -259,7 +266,7 @@ export function drawCover(canvas, state, options = {}) {
  * Exports cover at target resolution and triggers browser download.
  * Returns a Promise that resolves when download starts.
  */
-export function exportCover(state, width = 1080, height = 1080) {
+export function exportCover(state, width = 1080, height = 1080, filename = 'vice-frame-cover.png') {
   return new Promise((resolve) => {
     const offscreen = document.createElement('canvas');
     offscreen.width = width;
@@ -272,7 +279,7 @@ export function exportCover(state, width = 1080, height = 1080) {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `vice-frame-cover-${width}x${height}.png`;
+      link.download = filename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
