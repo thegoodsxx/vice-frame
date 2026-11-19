@@ -3,21 +3,183 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cover Snap</title>
+<title>VICE FRAME — GTA-Style Cover Art Maker</title>
+<link rel="icon" href="data:,">
 <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-<main class="app">
-  <section class="controls">
-    <h1>Cover Snap</h1>
-    <p>A photo and a caption, made into a square cover.</p>
-    <label>Photo <input id="photo" type="file" accept="image/*"></label>
-    <label>Caption <input id="caption" type="text" maxlength="40" value="Sunset Heist"></label>
-    <button id="export" type="button">Export PNG 1080 x 1080</button>
-    <p id="status" role="status"></p>
-  </section>
-  <canvas id="cover" width="1080" height="1080" aria-label="The cover"></canvas>
-</main>
+<div class="app">
+  <!-- Sidebar Controls -->
+  <aside class="sidebar" id="sidebar">
+    <header class="app-header">
+      <div class="logo-badge">
+        <h1 class="app-title">VICE FRAME</h1>
+        <span class="app-tagline">GTA VI COVER MAKER</span>
+      </div>
+      <p class="privacy-note">🔒 Photos never leave your machine</p>
+    </header>
+
+    <div class="sidebar-scroll">
+      <!-- Section: Quick Start Samples -->
+      <section class="control-group">
+        <div class="group-title">QUICK SAMPLES</div>
+        <div class="button-row">
+          <button type="button" class="btn btn-secondary" id="loadPierBtn" title="Load bundled Pier sample photo">🌴 Pier</button>
+          <button type="button" class="btn btn-secondary" id="loadBoulevardBtn" title="Load bundled Boulevard sample photo">🚗 Boulevard</button>
+          <button type="button" class="btn btn-secondary" id="mixSamplesBtn" title="Mix both sample photos across panels">🎲 Mix</button>
+        </div>
+        <button type="button" class="btn btn-accent" id="onePhotoAllBtn" title="Fill every panel from a single photo with varied crops">
+          🖼️ One Photo, Every Panel
+        </button>
+        <input type="file" id="onePhotoInput" accept="image/*" class="sr-only">
+      </section>
+
+      <!-- Section: Layout Templates -->
+      <section class="control-group">
+        <div class="group-title">LAYOUT TEMPLATES</div>
+        <div class="layout-strip" id="layoutStrip" role="radiogroup" aria-label="Layout Templates">
+          <button type="button" class="layout-chip active" data-layout="classic6">
+            <span class="chip-name">Classic 6</span>
+            <span class="chip-desc">Hero + 5 Boxes</span>
+          </button>
+          <button type="button" class="layout-chip" data-layout="quad4">
+            <span class="chip-name">Quad 4</span>
+            <span class="chip-desc">2×2 Grid</span>
+          </button>
+          <button type="button" class="layout-chip" data-layout="triptych3">
+            <span class="chip-name">Triptych 3</span>
+            <span class="chip-desc">3 Tall Slices</span>
+          </button>
+          <button type="button" class="layout-chip" data-layout="duo2">
+            <span class="chip-name">Duo 2</span>
+            <span class="chip-desc">Split 50/50</span>
+          </button>
+          <button type="button" class="layout-chip" data-layout="cinematic5">
+            <span class="chip-name">Cinematic 5</span>
+            <span class="chip-desc">Wide + 4 Strips</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Section: Selected Panel Adjustments -->
+      <section class="control-group" id="panelControlsSection">
+        <div class="group-title" id="selectedPanelTitle">PANEL: HERO (0)</div>
+        <p class="panel-hint">Click a panel on the canvas to select it. Drag canvas to pan photo.</p>
+        <div class="button-row">
+          <label class="btn btn-primary file-btn" for="panelPhotoInput">
+            📷 Replace Photo
+            <input type="file" id="panelPhotoInput" accept="image/*" class="sr-only">
+          </label>
+          <button type="button" class="btn btn-secondary" id="flipPanelBtn" title="Flip photo horizontally">⇄ Flip</button>
+          <button type="button" class="btn btn-danger" id="clearPanelBtn" title="Remove photo from this panel">✕</button>
+        </div>
+        <div class="slider-control">
+          <div class="slider-header">
+            <span>Zoom</span>
+            <span id="zoomValue">1.0×</span>
+          </div>
+          <input type="range" id="panelZoom" min="1.0" max="3.0" step="0.05" value="1.0">
+        </div>
+      </section>
+
+      <!-- Section: Vice City Grades -->
+      <section class="control-group">
+        <div class="group-title">VICE CITY GRADE</div>
+        <div class="grade-strip" id="gradeStrip" role="radiogroup" aria-label="Color Grades">
+          <button type="button" class="grade-chip active" data-grade="vice-sunset">
+            <span class="grade-dot sunset"></span>
+            <span>Vice Sunset</span>
+          </button>
+          <button type="button" class="grade-chip" data-grade="neon-night">
+            <span class="grade-dot neon"></span>
+            <span>Neon Night</span>
+          </button>
+          <button type="button" class="grade-chip" data-grade="golden-hour">
+            <span class="grade-dot golden"></span>
+            <span>Golden Hour</span>
+          </button>
+          <button type="button" class="grade-chip" data-grade="noir">
+            <span class="grade-dot noir"></span>
+            <span>Noir</span>
+          </button>
+          <button type="button" class="grade-chip" data-grade="clean">
+            <span class="grade-dot clean"></span>
+            <span>Clean</span>
+          </button>
+        </div>
+        <label class="checkbox-label">
+          <input type="checkbox" id="grainToggle" checked>
+          <span>🎞️ Comic Print Grain Texture</span>
+        </label>
+      </section>
+
+      <!-- Section: Caption Lettering -->
+      <section class="control-group">
+        <div class="group-title">CAPTION LETTERING</div>
+        <label class="text-field-label">
+          <span>Title Line</span>
+          <input type="text" id="captionTitle" maxlength="32" value="VICE FRAME" placeholder="MAIN TITLE">
+        </label>
+        <label class="text-field-label">
+          <span>Subtitle Line</span>
+          <input type="text" id="captionSubtitle" maxlength="40" value="CITY OF VICE" placeholder="SUBTITLE">
+        </label>
+        <div class="slider-control">
+          <div class="slider-header">
+            <span>Caption Size</span>
+            <span id="captionSizeValue">1.0×</span>
+          </div>
+          <input type="range" id="captionSize" min="0.6" max="1.6" step="0.05" value="1.0">
+        </div>
+        <div class="slider-control">
+          <div class="slider-header">
+            <span>Vertical Position</span>
+            <span id="captionPosValue">82%</span>
+          </div>
+          <input type="range" id="captionPos" min="0.1" max="0.95" step="0.01" value="0.82">
+        </div>
+      </section>
+
+      <!-- Section: Export -->
+      <section class="control-group">
+        <div class="group-title">EXPORT COVER</div>
+        <div class="export-buttons">
+          <button type="button" class="btn btn-export" id="export1080Btn" data-w="1080" data-h="1080">
+            Export 1080 × 1080 (Square)
+          </button>
+          <button type="button" class="btn btn-export" id="export1350Btn" data-w="1080" data-h="1350">
+            Export 1080 × 1350 (Portrait)
+          </button>
+          <button type="button" class="btn btn-export" id="export1920Btn" data-w="1920" data-h="1080">
+            Export 1920 × 1080 (Widescreen)
+          </button>
+        </div>
+        <p id="status" class="status-message" role="status"></p>
+      </section>
+    </div>
+  </aside>
+
+  <!-- Canvas Workspace Area -->
+  <main class="workbench">
+    <div class="workbench-bar">
+      <div class="aspect-pills">
+        <span class="bar-label">Preview Aspect:</span>
+        <button type="button" class="pill active" data-aspect="1:1" data-w="1080" data-h="1080">1:1 Square</button>
+        <button type="button" class="pill" data-aspect="4:5" data-w="1080" data-h="1350">4:5 Portrait</button>
+        <button type="button" class="pill" data-aspect="16:9" data-w="1920" data-h="1080">16:9 Wide</button>
+      </div>
+      <div class="canvas-tips">
+        <span>Click to select panel • Drag to pan • Wheel to zoom • Drop image to replace</span>
+      </div>
+    </div>
+    <div class="canvas-stage" id="canvasStage">
+      <div class="canvas-wrapper" id="canvasWrapper">
+        <canvas id="cover" width="1080" height="1080" aria-label="VICE FRAME Cover Art Preview"></canvas>
+      </div>
+    </div>
+  </main>
+</div>
+
 <script type="module" src="./src/main.js"></script>
 </body>
 </html>
