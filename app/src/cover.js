@@ -139,7 +139,7 @@ function drawCaption(ctx, width, height, captionState) {
 
   const fontMultiplier = captionState.size || 1.0;
   const posY = captionState.position !== undefined ? captionState.position : 0.82; // 0.0 to 1.0
-  const baseSize = height * 0.095 * fontMultiplier;
+  let baseSize = height * 0.098 * fontMultiplier;
 
   ctx.save();
   ctx.textAlign = 'center';
@@ -150,18 +150,27 @@ function drawCaption(ctx, width, height, captionState) {
 
   // Title styling: Heavy condensed font, solid thick black outline, slight drop shadow
   if (title) {
+    ctx.font = `900 ${baseSize}px 'Anton', Impact, 'Arial Black', sans-serif`;
+    
+    // Auto-fit title if it exceeds 90% of canvas width
+    let measuredWidth = ctx.measureText(title).width;
+    const maxWidth = width * 0.90;
+    if (measuredWidth > maxWidth) {
+      baseSize = Math.max(16, baseSize * (maxWidth / measuredWidth));
+      ctx.font = `900 ${baseSize}px 'Anton', Impact, 'Arial Black', sans-serif`;
+    }
+
     const titleSize = baseSize;
-    ctx.font = `900 ${titleSize}px 'Anton', Impact, 'Arial Black', sans-serif`;
 
-    // Drop shadow
+    // Deep drop shadow
     ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
-    ctx.shadowBlur = Math.max(6, titleSize * 0.18);
+    ctx.shadowBlur = Math.max(6, titleSize * 0.16);
     ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = Math.max(4, titleSize * 0.08);
+    ctx.shadowOffsetY = Math.max(4, titleSize * 0.07);
 
-    // Stroke
+    // Thick black stroke
     ctx.strokeStyle = '#000000';
-    ctx.lineWidth = Math.max(6, titleSize * 0.16);
+    ctx.lineWidth = Math.max(7, titleSize * 0.17);
     ctx.lineJoin = 'miter';
     ctx.miterLimit = 2;
     ctx.strokeText(title, anchorX, anchorY);
@@ -170,32 +179,40 @@ function drawCaption(ctx, width, height, captionState) {
     ctx.shadowColor = 'transparent';
     const textGrad = ctx.createLinearGradient(0, anchorY - titleSize * 0.5, 0, anchorY + titleSize * 0.5);
     textGrad.addColorStop(0, '#ffffff');
-    textGrad.addColorStop(0.7, '#fffaf0');
-    textGrad.addColorStop(1, '#ffd0e0');
+    textGrad.addColorStop(0.65, '#fffbf2');
+    textGrad.addColorStop(1, '#ffd6e5');
     ctx.fillStyle = textGrad;
     ctx.fillText(title, anchorX, anchorY);
   }
 
-  // Subtitle styling: Smaller condensed text with dark border
+  // Subtitle styling: Smaller condensed text with dark border and electric color
   if (subtitle) {
-    const subSize = baseSize * 0.38;
-    const subOffsetY = title ? baseSize * 0.65 : 0;
+    let subSize = baseSize * 0.36;
+    const subOffsetY = title ? baseSize * 0.64 : 0;
     ctx.font = `800 ${subSize}px 'Anton', Impact, 'Arial Black', sans-serif`;
+
+    // Fit subtitle within 85% width
+    let subWidth = ctx.measureText(subtitle).width;
+    const maxSubWidth = width * 0.85;
+    if (subWidth > maxSubWidth) {
+      subSize = Math.max(12, subSize * (maxSubWidth / subWidth));
+      ctx.font = `800 ${subSize}px 'Anton', Impact, 'Arial Black', sans-serif`;
+    }
 
     // Drop shadow
     ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-    ctx.shadowBlur = Math.max(4, subSize * 0.2);
+    ctx.shadowBlur = Math.max(4, subSize * 0.18);
     ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = Math.max(3, subSize * 0.1);
+    ctx.shadowOffsetY = Math.max(3, subSize * 0.09);
 
-    // Stroke
+    // Solid black outline
     ctx.strokeStyle = '#000000';
-    ctx.lineWidth = Math.max(4, subSize * 0.18);
+    ctx.lineWidth = Math.max(4, subSize * 0.19);
     ctx.lineJoin = 'miter';
     ctx.miterLimit = 2;
     ctx.strokeText(subtitle, anchorX, anchorY + subOffsetY);
 
-    // Fill: Electric yellow/gold or neon pink
+    // Electric gold fill
     ctx.shadowColor = 'transparent';
     ctx.fillStyle = '#ffe600';
     ctx.fillText(subtitle, anchorX, anchorY + subOffsetY);
@@ -245,8 +262,6 @@ export function drawCover(canvas, state, options = {}) {
   ctx.strokeRect(gutter / 2, gutter / 2, w - gutter, h - gutter);
 
   // 5. Apply Vice City grade preset
-  const gradeKey = state.gradeId || 'vice-sunset';
-  const grade = GRADES[gradeKey];
   if (grade && grade.apply) {
     grade.apply(ctx, w, h);
   }

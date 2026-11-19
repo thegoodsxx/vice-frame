@@ -537,6 +537,7 @@ input[type=range]::-webkit-slider-thumb {
   display: flex;
   align-items: center;
   justify-content: center;
+  filter: drop-shadow(0 25px 50px rgba(0, 0, 0, 0.85));
 }
 
 canvas#cover {
@@ -546,11 +547,17 @@ canvas#cover {
   width: auto;
   height: auto;
   aspect-ratio: 1 / 1;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(255, 42, 133, 0.15);
-  border: 2px solid #201a36;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.9), 0 0 45px rgba(255, 42, 133, 0.18);
+  border: 3px solid #1a162b;
   border-radius: 4px;
   cursor: crosshair;
   user-select: none;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+canvas#cover:hover {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 35px rgba(0, 0, 0, 0.9), 0 0 50px rgba(0, 240, 255, 0.22);
 }
 
 /* Screenshot Mode (clean canvas only) */
